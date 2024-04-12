@@ -49,9 +49,9 @@
       </template>
       <template slot="item" slot-scope="data">
         <v-list-tile-content>
-          <v-list-tile-title
+          <v-list-title
             v-html="data.item.replace('parameters.', '').replace('.value', '')"
-          ></v-list-tile-title>
+          ></v-list-title>
         </v-list-tile-content>
       </template>
     </v-autocomplete>
