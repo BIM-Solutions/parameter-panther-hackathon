@@ -42,7 +42,6 @@ export default {
       this.objectUrls = [url];
     },
     applyFilter(filter) {
-      console.log("filter:", filter);
       this.filter = filter;
     },
   }

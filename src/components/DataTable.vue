@@ -307,7 +307,6 @@ export default {
 
         this.editedItem = filteredFields;
         // this.editableFields = Object.keys(filteredFields);
-        console.log("uniqueHeaderNames 1:", this.uniqueHeaderNames);
         this.editableFields = this.uniqueHeaderNames;
       }
     },
@@ -473,13 +472,8 @@ export default {
       const streamId = url.pathname.split("/")[2];
       const objectId = url.pathname.split("/")[4];
 
-      console.log("streamId:", streamId);
-      console.log("objectId:", objectId);
-
       // Get the gql query string.
       const query = objectQuery(streamId, objectId);
-
-      console.log("query:\n" + query);
 
       // Set loading status
       this.fetchLoading = true;
@@ -488,21 +482,14 @@ export default {
       // Note: The limit, selection and query clause are passed in as variables.
       let rawRes = await this.fetchFromApi(query, null, server);
 
-      console.log("rawRes:", rawRes);
-
       // Parse the response into.
       let res = await rawRes.json();
-
-      console.log("read json:", res);
 
       if (res.errors) return;
 
       let obj = res.data.stream.object;
 
-      console.log("obj:", obj);
-
       this.objects = obj.data;
-      console.log("this.objects:", this.objects);
 
       if (this.objects.elements) {
         const allCategoriesData = await Promise.all(this.objects.elements.map(async (element) => {
@@ -513,8 +500,6 @@ export default {
           return data.data.stream.object.data;
         }));
 
-        console.log("allCategoriesData:", allCategoriesData)
-
         this.categoriesData = allCategoriesData;
         this.categories = allCategoriesData.map(c => c.name);
       }
@@ -522,18 +507,14 @@ export default {
         let tempCategories = Object.keys(this.objects).filter((cat) =>
           cat.startsWith("@")
         );
-        console.log("tempCategories:", tempCategories);
         this.categories = tempCategories
           .map((cat) => cat.slice(1))
           .filter((c) => !c.startsWith("<"))
           .sort();
       }
 
-      console.log("this.categories:", this.categories);
-
       // Last, signal that we're done loading!
       this.fetchLoading = false;
-      console.log("end of fetch");
     },
     async fetchCategoryObjects(category) {
       // Set loading status
@@ -571,9 +552,7 @@ export default {
         let res = await rawRes.json();
 
         let obj = res.data.stream.object;
-        // console.log("obj.data:", obj.data);
         // filter RevitElementTypes
-        console.log("obj:", obj)
         if(!obj.data["speckle_type"].endsWith("RevitElementType")) {
           this.parameterUpdater.addObjects([obj]);
 
@@ -585,8 +564,6 @@ export default {
 
       // Create a unique list of all the headers.
       this.uniqueHeaderNames = new Set();
-
-      // console.log("flatObjs:", this.flatObjs);
 
       let ids = [];
 
@@ -627,19 +604,13 @@ export default {
               let units = o["units"];
         
               if(!isReadOnly && !isTypeParameter) {
-                // console.log("isReadOnly:", isReadOnly);
-                // console.log("isTypeParameter:", isTypeParameter);
                 // this.uniqueHeaderNames.add(k);
-                // console.log("kept:", k);
 
                 let instanceParameterName = name + " | " + applicationInternalName;
                 if(units) {
                   instanceParameterName = instanceParameterName + " [" + units + "]";
                 }
                   this.instanceParameters.push(instanceParameterName);
-              }
-              else {
-                // console.log("dropped:", k);
               }
             }
           }
@@ -675,15 +646,12 @@ export default {
             return self.indexOf(value) === index;
           });
       }
-      // console.log("flatObjs:", this.flatObjs);
 
       // TODO restore previous activeFilters before add/remove item
       this.activeFilters = Object.assign({}, this.filters);
-      // console.log(this.filters);
       /*if (Object.keys(this.activeFilters).length === 0) this.activeFilters = Object.assign({}, this.filters)
       else {
         setTimeout(() => {
-          console.log(this.activeFilters)
           //this.activeFilters = Object.assign({}, this.filters)
         }, 1)
       }*/
@@ -697,7 +665,6 @@ export default {
       return ids;
     },
     toggleAll(col) {
-      console.log("toggleAll");
       this.activeFilters[col] = this.flatObjs
         .map((d) => {
           return d[col];
@@ -712,8 +679,6 @@ export default {
       this.$emit("applyFilter", this.rendererFilter);
     },
     clearAll(col) {
-      console.log("clearAll");
-      // console.log(col);
       this.activeFilters[col] = [];
       this.rendererFilter = {
         filterBy: { __parents: { includes: [] } },
@@ -722,23 +687,18 @@ export default {
       this.$emit("applyFilter", this.rendererFilter);
     },
     editItem(item) {
-      // console.log("editItem()");
       let matchingItem = this.flatObjs.filter((obj) => {
         return obj.id === item.id;
       });
       // this is not working!
       this.editedIndex = this.flatObjs.indexOf(matchingItem);
       this.editedItem = Object.assign({}, item);
-      console.log("editedItem 2:", this.editedItem)
-      // console.log("editedIndex:", this.editedIndex);
 
       // HERE
-      console.log("uniqueHeaderNames 2:", this.uniqueHeaderNames);
       this.editableFields = this.uniqueHeaderNames;
       this.dialog = true;
     },
     deleteItem(item) {
-      console.log(item);
       const index = this.flatObjs.indexOf(item);
       confirm("Are you sure you want to delete this item?") &&
         this.flatObjs.splice(index, 1);
@@ -776,7 +736,6 @@ export default {
         key;
         this.parameterUpdater.updateParam(this.editedItem.id, val[0], val[1]);
       });
-      console.log("parameterUpdater:", this.parameterUpdater);
       if (this.editedIndex > -1) {
         Object.assign(this.flatObjs[this.editedIndex], this.editedItem);
       } else {

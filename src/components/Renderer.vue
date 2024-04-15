@@ -259,18 +259,11 @@ export default {
       this.domElement = renderDomElement;
       this.domElement.style.display = "inline-block";
       this.$refs.rendererparent.appendChild(renderDomElement);
-      console.log("checking __viewer")
       if (!window.__viewer) {
-        console.log("__viewer does not exist")
         window.__viewer = new Viewer(renderDomElement, {
           ...DefaultViewerParams,
           showStats: false
-        })
-        // window.__viewer = new Viewer({
-        //   container: renderDomElement,
-        //   showStats: true,
-        // });
-        console.log("setting viewer", window.__viewer)
+        });
       }
       window.__viewer.cameraHandler.onWindowResize();
       this.setupEvents();
@@ -327,7 +320,6 @@ export default {
       this.namedViews.splice(0, this.namedViews.length);
     },
     applyFilter() {
-      // console.log("this.filter:", this.filter);
       window.__viewer.applyFilter(this.filter);
     },
   },

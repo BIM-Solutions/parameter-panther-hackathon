@@ -136,8 +136,6 @@ export class ParameterUpdater {
       }`;
 
     await speckleFetch(commitQuery);
-
-    console.log("done!");
   }
 }
 

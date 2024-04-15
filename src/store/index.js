@@ -330,24 +330,19 @@ const store = new Vuex.Store({
     },    
     async getUser(state) {
       try {
-        console.log("called?")
         if (
           Object.keys(state.state.selectedServer).length === 0 ||
           Object.keys(state.state.token).length === 0
         ) {
           const server = speckleUtil.getServer(state);
-          console.log("server:", server);
           const token = speckleUtil.getToken();
-          console.log("token:", token);
           state.commit("login", {
             token,
             server,
           });
         }
         const json = await speckleUtil.getUserData(state);
-        console.log("json:", json);
         const data = json.data;
-        console.log("data:", data);
         state.commit("setUser", data.user);
         state.commit("setServerInfo", data.serverInfo);
       } catch (err) {
