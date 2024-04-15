@@ -241,10 +241,11 @@ export default {
   components: {},
   data() {
     return {
-      url: "https://v2.speckle.arup.com/streams/465e7157fe/objects/2976ed34ee720713a6fe18b50c5aad71",
+      url: "https://v2.speckle.arup.com/streams/af5b9ce8f5/objects/e39ac4f47336341234fae9dbdba1d30a",
       totalCount: null,
       parameterUpdater: new ParameterUpdater(""),
       categories: [],
+      categoriesData: [],
       objects: [],
       selectedCategory: null,
       // select:
@@ -503,14 +504,30 @@ export default {
       this.objects = obj.data;
       console.log("this.objects:", this.objects);
 
-      let tempCategories = Object.keys(this.objects).filter((cat) =>
-        cat.startsWith("@")
-      );
-      console.log("tempCategories:", tempCategories);
-      this.categories = tempCategories
-        .map((cat) => cat.slice(1))
-        .filter((c) => !c.startsWith("<"))
-        .sort();
+      if (this.objects.elements) {
+        const allCategoriesData = await Promise.all(this.objects.elements.map(async (element) => {
+          const res = await this.fetchFromApi(objectQuery(streamId, element.referencedId), null, server)
+
+          const data = await res.json()
+
+          return data.data.stream.object.data;
+        }));
+
+        console.log("allCategoriesData:", allCategoriesData)
+
+        this.categoriesData = allCategoriesData;
+        this.categories = allCategoriesData.map(c => c.name);
+      }
+      else {
+        let tempCategories = Object.keys(this.objects).filter((cat) =>
+          cat.startsWith("@")
+        );
+        console.log("tempCategories:", tempCategories);
+        this.categories = tempCategories
+          .map((cat) => cat.slice(1))
+          .filter((c) => !c.startsWith("<"))
+          .sort();
+      }
 
       console.log("this.categories:", this.categories);
 
@@ -525,7 +542,13 @@ export default {
       this.flatObjs = [];
       this.selectedCategory = category;
 
-      let objs = this.objects[`@${category}`];
+      // let objs = this.objects[`@${category}`];
+      let objs;
+      if (this.objects.elements) {
+        objs = this.categoriesData.find(c => c.name === category).elements;
+      } else {
+        objs = this.objects[`@${category}`];
+      }
       let referencedIds = objs.map((o) => o["referencedId"]);
 
       const url = new URL(this.url);
@@ -550,6 +573,7 @@ export default {
         let obj = res.data.stream.object;
         // console.log("obj.data:", obj.data);
         // filter RevitElementTypes
+        console.log("obj:", obj)
         if(!obj.data["speckle_type"].endsWith("RevitElementType")) {
           this.parameterUpdater.addObjects([obj]);
 
