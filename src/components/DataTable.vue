@@ -70,7 +70,6 @@
       item-key="id"
       :items-per-page="limit"
       :search="search"
-      hide-default-footer
       class="elevation-1 my-4"
       v-model="selectedItem"
     >
