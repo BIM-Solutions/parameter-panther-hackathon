@@ -455,6 +455,7 @@ export default {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: "Bearer " + this.$store.state.token.token
         },
         body: JSON.stringify({
           query: query,
@@ -471,8 +472,13 @@ export default {
       const streamId = url.pathname.split("/")[2];
       const objectId = url.pathname.split("/")[4];
 
+      console.log("streamId:", streamId);
+      console.log("objectId:", objectId);
+
       // Get the gql query string.
       const query = objectQuery(streamId, objectId);
+
+      console.log("query:\n" + query);
 
       // Set loading status
       this.fetchLoading = true;
@@ -481,22 +487,36 @@ export default {
       // Note: The limit, selection and query clause are passed in as variables.
       let rawRes = await this.fetchFromApi(query, null, server);
 
+      console.log("rawRes:", rawRes);
+
       // Parse the response into.
       let res = await rawRes.json();
 
+      console.log("read json:", res);
+
+      if (res.errors) return;
+
       let obj = res.data.stream.object;
 
+      console.log("obj:", obj);
+
       this.objects = obj.data;
+      console.log("this.objects:", this.objects);
+
       let tempCategories = Object.keys(this.objects).filter((cat) =>
         cat.startsWith("@")
       );
+      console.log("tempCategories:", tempCategories);
       this.categories = tempCategories
         .map((cat) => cat.slice(1))
         .filter((c) => !c.startsWith("<"))
         .sort();
 
+      console.log("this.categories:", this.categories);
+
       // Last, signal that we're done loading!
       this.fetchLoading = false;
+      console.log("end of fetch");
     },
     async fetchCategoryObjects(category) {
       // Set loading status
