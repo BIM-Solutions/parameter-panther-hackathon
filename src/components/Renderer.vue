@@ -176,7 +176,7 @@
 </template>
 
 <script>
-import { Viewer } from "@speckle/viewer";
+import { Viewer, DefaultViewerParams } from "@speckle/viewer";
 import throttle from "lodash.throttle";
 
 export default {
@@ -259,19 +259,26 @@ export default {
       this.domElement = renderDomElement;
       this.domElement.style.display = "inline-block";
       this.$refs.rendererparent.appendChild(renderDomElement);
+      console.log("checking __viewer")
       if (!window.__viewer) {
-        window.__viewer = new Viewer({
-          container: renderDomElement,
-          showStats: true,
-        });
+        console.log("__viewer does not exist")
+        window.__viewer = new Viewer(renderDomElement, {
+          ...DefaultViewerParams,
+          showStats: false
+        })
+        // window.__viewer = new Viewer({
+        //   container: renderDomElement,
+        //   showStats: true,
+        // });
+        console.log("setting viewer", window.__viewer)
       }
-      window.__viewer.onWindowResize();
+      window.__viewer.cameraHandler.onWindowResize();
       this.setupEvents();
 
       this.load(); // remove if not autoloading?
     },
     zoomEx() {
-      window.__viewer.interactions.zoomExtents();
+      // window.__viewer.cameraHandler.interactions.zoomExtents();
     },
     setView(view) {
       window.__viewer.interactions.rotateTo(view);
