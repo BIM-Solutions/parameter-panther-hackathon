@@ -43,16 +43,12 @@
       multiple
     >
       <template slot="selection" slot-scope="data">
-        <v-chip :selected="data.selected" class="chip--select">
+        <v-chip :input-value="data.selected" class="chip--select">
           {{ data.item.replace("parameters.", "").replace(".value", "") }}
         </v-chip>
       </template>
       <template slot="item" slot-scope="data">
-        <v-list-tile-content>
-          <v-list-title
-            v-html="data.item.replace('parameters.', '').replace('.value', '')"
-          ></v-list-title>
-        </v-list-tile-content>
+        <span v-html="data.item.replace('parameters.', '').replace('.value', '')"></span>
       </template>
     </v-autocomplete>
     <v-card-title class="pl-0 pb-2">
