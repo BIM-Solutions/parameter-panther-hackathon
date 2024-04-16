@@ -70,6 +70,7 @@
       item-key="id"
       :items-per-page="limit"
       :search="search"
+      :loading="itemsLoading"
       class="elevation-1 my-4"
       v-model="selectedItem"
     >
@@ -256,7 +257,8 @@ export default {
       activeFilters: {},
       selectedItem: [],
       rendererFilter: [],
-      successSnackbar: false
+      successSnackbar: false,
+      itemsLoading: false,
     };
   },
   watch: {
@@ -492,6 +494,7 @@ export default {
     async fetchCategoryObjects(category) {
       // Set loading status
       this.fetchLoading = true;
+      this.itemsLoading = true;
 
       this.flatObjs = [];
       this.selectedCategory = category;
@@ -598,6 +601,7 @@ export default {
 
       // Last, signal that we're done loading!
       this.fetchLoading = false;
+      this.itemsLoading = false;
     },
     fetchInstanceParameters() {
       let filteredHeaders = this.instanceParameters
