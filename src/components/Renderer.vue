@@ -296,6 +296,7 @@ export default {
       this.namedViews.splice(0, this.namedViews.length);
     },
     applyFilter() {
+      window.__viewer.resetFilters();
       window.__viewer.isolateObjects(this.filter);
     },
   },
