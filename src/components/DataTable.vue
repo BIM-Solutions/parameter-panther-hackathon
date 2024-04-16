@@ -48,7 +48,9 @@
         </v-chip>
       </template>
       <template slot="item" slot-scope="data">
-        <span v-html="data.item.replace('parameters.', '').replace('.value', '')"></span>
+        <span
+          v-html="data.item.replace('parameters.', '').replace('.value', '')"
+        ></span>
       </template>
     </v-autocomplete>
     <v-card-title class="pl-0 pb-2">
@@ -75,7 +77,10 @@
       v-model="selectedItem"
     >
       <template v-for="(col, i) in filters" v-slot:[`header.${i}`]="{ header }">
-        <div :key="`${i}-header`" style="display: inline-block; padding: 16px 0">
+        <div
+          :key="`${i}-header`"
+          style="display: inline-block; padding: 16px 0"
+        >
           {{ header.text }}
         </div>
         <div :key="`${i}-other`" style="float: right; margin-top: 8px">
@@ -201,7 +206,13 @@
         >Save</v-btn
       >
     </div>
-    <v-snackbar v-model="successSnackbar" :timeout="2000" color="green" right rounded="pill">
+    <v-snackbar
+      v-model="successSnackbar"
+      :timeout="2000"
+      color="green"
+      right
+      rounded="pill"
+    >
       Params updated
     </v-snackbar>
   </v-container>
@@ -259,6 +270,7 @@ export default {
       rendererFilter: [],
       successSnackbar: false,
       itemsLoading: false,
+      headerNameVals: [],
     };
   },
   watch: {
@@ -293,24 +305,23 @@ export default {
         let ids = [];
         for (var index in this.flatObjs) {
           var o = this.flatObjs[index];
-          if(!this.activeFilters["family"].includes(o["family"])) {
+          if (!this.activeFilters["family"].includes(o["family"])) {
             continue;
-          }
-          else if(!this.activeFilters["type"].includes(o["type"])) {
+          } else if (!this.activeFilters["type"].includes(o["type"])) {
             continue;
-          }
-          else if(!this.activeFilters["elementId"].includes(o["elementId"])) {
+          } else if (
+            !this.activeFilters["elementId"].includes(o["elementId"])
+          ) {
             continue;
-          }
-          else if(!this.activeFilters["level"].includes(o["level"])) {
+          } else if (!this.activeFilters["level"].includes(o["level"])) {
             continue;
           }
           ids.push(o.id);
         }
-      this.rendererFilter = ids;
-      this.$emit("applyFilter", this.rendererFilter);
-     },
-     deep: true
+        this.rendererFilter = ids;
+        this.$emit("applyFilter", this.rendererFilter);
+      },
+      deep: true,
     },
   },
   computed: {
@@ -385,16 +396,24 @@ export default {
           // },
         },
       ];
-      this.uniqueHeaderNames.forEach((val) => {
-        if (val) {
-          tmp.push({
-            text: val.replace("parameters.", "").replace(".value", ""),
-            align: "start",
-            sortable: true,
-            value: val,
-          });
-        }
+      this.headerNameVals.forEach((val) => {
+        tmp.push({
+          text: val.name,
+          align: "start",
+          sortable: true,
+          value: this.createParamValue(val.value), //"parameters." + val.value + ".value",
+        });
       });
+      // this.uniqueHeaderNames.forEach((val) => {
+      //   if (val) {
+      //     tmp.push({
+      //       text: val.replace("parameters.", "").replace(".value", ""),
+      //       align: "start",
+      //       sortable: true,
+      //       value: val,
+      //     });
+      //   }
+      // });
       tmp.push({
         text: "Id",
         align: "start",
@@ -430,7 +449,7 @@ export default {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer " + this.$store.state.token.token
+          Authorization: "Bearer " + this.$store.state.token.token,
         },
         body: JSON.stringify({
           query: query,
@@ -467,18 +486,23 @@ export default {
       this.objects = obj.data;
 
       if (this.objects.elements) {
-        const allCategoriesData = await Promise.all(this.objects.elements.map(async (element) => {
-          const res = await this.fetchFromApi(objectQuery(streamId, element.referencedId), null, server)
+        const allCategoriesData = await Promise.all(
+          this.objects.elements.map(async (element) => {
+            const res = await this.fetchFromApi(
+              objectQuery(streamId, element.referencedId),
+              null,
+              server
+            );
 
-          const data = await res.json()
+            const data = await res.json();
 
-          return data.data.stream.object.data;
-        }));
+            return data.data.stream.object.data;
+          })
+        );
 
         this.categoriesData = allCategoriesData;
-        this.categories = allCategoriesData.map(c => c.name);
-      }
-      else {
+        this.categories = allCategoriesData.map((c) => c.name);
+      } else {
         let tempCategories = Object.keys(this.objects).filter((cat) =>
           cat.startsWith("@")
         );
@@ -502,7 +526,7 @@ export default {
       // let objs = this.objects[`@${category}`];
       let objs;
       if (this.objects.elements) {
-        objs = this.categoriesData.find(c => c.name === category).elements;
+        objs = this.categoriesData.find((c) => c.name === category).elements;
       } else {
         objs = this.objects[`@${category}`];
       }
@@ -529,7 +553,7 @@ export default {
 
         let obj = res.data.stream.object;
         // filter RevitElementTypes
-        if(!obj.data["speckle_type"].endsWith("RevitElementType")) {
+        if (!obj.data["speckle_type"].endsWith("RevitElementType")) {
           this.parameterUpdater.addObjects([obj]);
 
           // Flatten the object!
@@ -543,19 +567,18 @@ export default {
 
       let ids = [];
 
-      for(var index in this.flatObjs) {
+      for (var index in this.flatObjs) {
         var o = this.flatObjs[index];
 
-        Object.keys(o).forEach(
-          (k) => {
-            if(
+        Object.keys(o).forEach((k) => {
+          if (
             !k.includes("__closure") &&
             !k.includes("type") &&
             !k.includes("id") &&
             !k.includes("family") &&
             !k.includes("elementId") &&
             !k.includes("category") &&
-            (k.startsWith("parameters") &&
+            k.startsWith("parameters") &&
             !k.endsWith("applicationUnit") &&
             !k.endsWith("applicationUnitType") &&
             !k.endsWith("applicationId") &&
@@ -567,30 +590,35 @@ export default {
             !k.endsWith("isReadOnly") &&
             !k.endsWith("isTypeParameter") &&
             !k.endsWith("applicationInternalName") &&
-            !k.endsWith("name"))) {
-              let isReadOnlyKey = k.replace("value", "isReadOnly");
-              let isTypeParameterKey = k.replace("value", "isTypeParameter");
-              let nameKey = k.replace("value", "name");
-              let applicationInternalNameKey = k.replace("value", "applicationInternalName");
+            !k.endsWith("name")
+          ) {
+            let isReadOnlyKey = k.replace("value", "isReadOnly");
+            let isTypeParameterKey = k.replace("value", "isTypeParameter");
+            let nameKey = k.replace("value", "name");
+            let applicationInternalNameKey = k.replace(
+              "value",
+              "applicationInternalName"
+            );
 
-              let isReadOnly = o[isReadOnlyKey];
-              let isTypeParameter = o[isTypeParameterKey];
-              let name = o[nameKey];
-              let applicationInternalName = o[applicationInternalNameKey];
-              let units = o["units"];
-        
-              if(!isReadOnly && !isTypeParameter) {
-                // this.uniqueHeaderNames.add(k);
+            let isReadOnly = o[isReadOnlyKey];
+            let isTypeParameter = o[isTypeParameterKey];
+            let name = o[nameKey];
+            let applicationInternalName = o[applicationInternalNameKey];
+            let units = o["units"];
 
-                let instanceParameterName = name + " | " + applicationInternalName;
-                if(units) {
-                  instanceParameterName = instanceParameterName + " [" + units + "]";
-                }
-                  this.instanceParameters.push(instanceParameterName);
+            if (!isReadOnly && !isTypeParameter) {
+              // this.uniqueHeaderNames.add(k);
+
+              let instanceParameterName =
+                name + " | " + applicationInternalName;
+              if (units) {
+                instanceParameterName =
+                  instanceParameterName + " [" + units + "]";
               }
+              this.instanceParameters.push(instanceParameterName);
             }
           }
-        );
+        });
         ids.push(o.id);
       }
       this.initFilters();
@@ -604,11 +632,24 @@ export default {
       this.itemsLoading = false;
     },
     fetchInstanceParameters() {
-      let filteredHeaders = this.instanceParameters
-        .filter((header) => this.selectedInstanceParameters.includes(header))
-        .sort();
-      let headerName = filteredHeaders.map(header => header.split("|")[0]);
+      let filteredHeaders = new Set(
+        this.instanceParameters
+          .filter((header) => this.selectedInstanceParameters.includes(header))
+          .sort()
+      );
+      let headerName = filteredHeaders.map((header) => header.split("|")[0]);
+      let nameVal = filteredHeaders.map((h) => {
+        const splitted = h.split("|");
+
+        return {
+          name: splitted[0].trim(),
+          value: splitted[1].trim().split(" ")[0],
+        };
+      });
+
       this.uniqueHeaderNames = new Set(headerName);
+
+      this.headerNameVals = new Set(nameVal);
     },
     initFilters() {
       for (let col in this.filters) {
@@ -678,25 +719,37 @@ export default {
         this.editedIndex = -1;
       });
     },
+    createParamValue(val) {
+      return "parameters." + val + ".value";
+    },
     save() {
-      for(var index in this.flatObjs) {
+      for (var index in this.flatObjs) {
         var obj = this.flatObjs[index];
         if (obj.id === this.editedItem.id) {
           this.editedIndex = index;
         }
       }
       const paramIdValArr = {};
-      const updatedParams = Object.entries(this.editedItem).filter(([key]) => !key.includes(".") && key.includes(" ")).map(([key, val]) => [key.trim(), val]);
+      const updatedParams = Object.entries(this.editedItem)
+        .filter(([key]) => !key.includes(".") && key.includes(" "))
+        .map(([key, val]) => [key.trim(), val]);
       Object.entries(this.editedItem).forEach(([key, val]) => {
         if (key.endsWith(".name") && val) {
           let id, value;
           updatedParams.forEach(([ukey, uval]) => {
             if (ukey === val) {
-              id = this.editedItem[key.replace(".name", ".id")]
+              const foundNameVal = this.headerNameVals.find(
+                (h) => h.name === ukey
+              );
+              this.editedItem[this.createParamValue(foundNameVal.value)] = uval;
+
+              id = this.editedItem[key.replace(".name", ".id")];
               value = uval;
-              paramIdValArr[key.replace("parameters.", "").replace(".name", "")] = [id, value];
+              paramIdValArr[
+                key.replace("parameters.", "").replace(".name", "")
+              ] = [id, value];
             }
-          })
+          });
         }
       });
 
