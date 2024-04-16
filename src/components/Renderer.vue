@@ -57,7 +57,7 @@
         class="pa-0 text-center transparent elevation-0 pb-3"
       >
         <v-btn-toggle class="elevation-0" style="z-index: 100">
-          <v-btn
+          <!-- <v-btn
             v-if="
               selectedObjects.length !== 0 &&
               (showSelectionHelper || fullScreen)
@@ -69,66 +69,32 @@
             <span v-if="!isSmall">Selection Details</span>
             <v-icon v-else small>mdi-cube</v-icon>
             ({{ selectedObjects.length }})
-          </v-btn>
-          <v-menu top close-on-click offset-y style="z-index: 100">
-            <template #activator="{ on: onMenu, attrs: menuAttrs }">
-              <v-tooltip top>
-                <template #activator="{ on: onTooltip, attrs: tooltipAttrs }">
-                  <v-btn
-                    small
-                    v-bind="{ ...tooltipAttrs, ...menuAttrs }"
-                    v-on="{ ...onTooltip, ...onMenu }"
-                  >
-                    <v-icon small>mdi-camera</v-icon>
-                  </v-btn>
-                </template>
-                Select view
-              </v-tooltip>
-            </template>
-
-            <v-list dense>
-              <v-list-item @click="setView('top')">
-                <v-list-item-title>Top</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="setView('front')">
-                <v-list-item-title>Front</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="setView('back')">
-                <v-list-item-title>Back</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="setView('left')">
-                <v-list-item-title>Left</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="setView('right')">
-                <v-list-item-title>Right</v-list-item-title>
-              </v-list-item>
-              <v-divider v-if="namedViews.length !== 0"></v-divider>
-              <v-list-item
-                v-for="view in namedViews"
-                :key="view.id"
-                @click="setNamedView(view.id)"
+          </v-btn> -->
+          <v-menu
+            :close-on-content-click="false"
+            origin="center"
+            rounded="lg"
+            open-on-hover
+            top
+            offset-y
+            close-delay="400"
+            nudge-top="10"
+            nudge-left="100"
+            nudge-width="200"
+          >
+            <template #activator="{ on, attrs }">
+              <v-btn
+                small
+                rounded
+                icon
+                v-bind="attrs"
+                v-on="on"
               >
-                <v-list-item-title>{{ view.name }}</v-list-item-title>
-              </v-list-item>
-            </v-list>
+                <v-icon small>mdi-white-balance-sunny</v-icon>
+              </v-btn>
+            </template>
+            <renderer-lighting-options v-model="config" />
           </v-menu>
-
-          <v-tooltip top>
-            <template #activator="{ on, attrs }">
-              <v-btn v-bind="attrs" small v-on="on" @click="zoomEx()">
-                <v-icon small>mdi-cube-scan</v-icon>
-              </v-btn>
-            </template>
-            Focus entire model
-          </v-tooltip>
-          <v-tooltip top>
-            <template #activator="{ on, attrs }">
-              <v-btn v-bind="attrs" small @click="sectionToggle()" v-on="on">
-                <v-icon small>mdi-scissors-cutting</v-icon>
-              </v-btn>
-            </template>
-            Show / Hide Section plane
-          </v-tooltip>
           <v-tooltip top>
             <template #activator="{ on, attrs }">
               <v-btn
@@ -176,13 +142,15 @@
 </template>
 
 <script>
-import { Viewer, DefaultViewerParams } from "@speckle/viewer";
+import { Viewer, DefaultViewerParams, DefaultLightConfiguration } from "@speckle/viewer";
 import throttle from "lodash.throttle";
+import RendererLightingOptions from "./viewer/RendererLightingOptions.vue";
 
 export default {
   name: "Renderer",
   components: {
     ObjectSelection: () => import("./viewer/ObjectSelection"),
+    RendererLightingOptions,
   },
   props: {
     autoLoad: {
@@ -206,7 +174,7 @@ export default {
       default: false,
     },
     filter: {
-      type: Object,
+      type: Array,
       default: null,
     },
   },
@@ -223,9 +191,16 @@ export default {
       showObjectDetails: false,
       hasImg: false,
       namedViews: [],
+      config: { ...DefaultLightConfiguration },
     };
   },
   watch: {
+    config: {
+      handler() {
+        window.__viewer.setLightConfiguration(this.config);
+      },
+      deep: true,
+    },
     unloadTrigger() {
       this.unloadData();
     },
@@ -234,8 +209,8 @@ export default {
     },
     loadProgress(newVal) {
       if (newVal >= 99) {
-        let views = window.__viewer.interactions.getViews();
-        this.namedViews.push(...views);
+        // let views = window.__viewer.interactions.getViews();
+        // this.namedViews.push(...views);
       }
     },
     objectUrls() {
@@ -250,7 +225,7 @@ export default {
     this.renderStream();
   },
   methods: {
-    renderStream() {
+    async renderStream() {
       let renderDomElement = document.getElementById("renderer");
       if (!renderDomElement) {
         renderDomElement = document.createElement("div");
@@ -262,13 +237,13 @@ export default {
       if (!window.__viewer) {
         window.__viewer = new Viewer(renderDomElement, {
           ...DefaultViewerParams,
-          showStats: false
+          showStats: false,
         });
       }
       window.__viewer.cameraHandler.onWindowResize();
       this.setupEvents();
 
-      this.load(); // remove if not autoloading?
+      await this.load(); // remove if not autoloading?
     },
     zoomEx() {
       // window.__viewer.cameraHandler.interactions.zoomExtents();
@@ -304,13 +279,14 @@ export default {
         //this.selectionData.push(objects.userData)
       });
     },
-    load() {
+    async load() {
       if (!this.objectUrls || this.objectUrls.length === 0) return;
       this.hasLoadedModel = true;
-      this.objectUrls?.forEach((url) => {
-        window.__viewer.loadObject(url, this.$store.state.token.token);
+      await Promise.all(this.objectUrls?.map(async (url) => {
+        await window.__viewer.loadObject(url, this.$store.state.token.token);
         window.__viewerLastLoadedUrl = url;
-      });
+      }));
+      window.__viewer.setLightConfiguration(this.config);
       this.setupEvents();
     },
     unloadData() {
@@ -320,7 +296,7 @@ export default {
       this.namedViews.splice(0, this.namedViews.length);
     },
     applyFilter() {
-      window.__viewer.applyFilter(this.filter);
+      window.__viewer.isolateObjects(this.filter);
     },
   },
 };

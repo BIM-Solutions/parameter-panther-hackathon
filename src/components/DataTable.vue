@@ -305,10 +305,7 @@ export default {
           }
           ids.push(o.id);
         }
-        this.rendererFilter = {
-        filterBy: { __parents: { includes: ids } },
-        ghostOthers: true,
-      };
+      this.rendererFilter = ids;
       this.$emit("applyFilter", this.rendererFilter);
      },
      deep: true
@@ -596,10 +593,7 @@ export default {
       this.initFilters();
       this.totalCount = this.flatObjs.length;
 
-      this.rendererFilter = {
-        filterBy: { __parents: { includes: ids } },
-        ghostOthers: true,
-      };
+      this.rendererFilter = ids;
       this.$emit("applyFilter", this.rendererFilter);
 
       // Last, signal that we're done loading!
@@ -648,18 +642,12 @@ export default {
         .filter((value, index, self) => {
           return self.indexOf(value) === index;
         });
-      this.rendererFilter = {
-        filterBy: { __parents: { includes: this.getIds() } },
-        ghostOthers: true,
-      };
+      this.rendererFilter = this.getIds();
       this.$emit("applyFilter", this.rendererFilter);
     },
     clearAll(col) {
       this.activeFilters[col] = [];
-      this.rendererFilter = {
-        filterBy: { __parents: { includes: [] } },
-        ghostOthers: true,
-      };
+      this.rendererFilter = [];
       this.$emit("applyFilter", this.rendererFilter);
     },
     editItem(item) {
