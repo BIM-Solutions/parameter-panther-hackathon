@@ -192,29 +192,6 @@
       </template>
     </v-data-table>
 
-    <v-btn
-      @click="prev"
-      :loading="prevLoading"
-      :disabled="cursors.length <= 2"
-      class="mr-2"
-      >prev</v-btn
-    >
-    <v-btn
-      @click="next"
-      :loading="nextLoading"
-      :disabled="
-        cursors.length === 0 || (cursors.length - 1) * limit >= totalCount
-      "
-      class="mr-2"
-      >next</v-btn
-    >
-
-    <p class="caption mt-2">
-      Curr items: {{ (cursors.length - 1) * limit }} Cursor:
-      {{ cursors ? cursors : "n/a" }}
-      Total count: {{ totalCount ? totalCount : "unknown" }}
-    </p>
-
     <div style="width: 100%" class="d-flex justify-end">
       <v-btn
         color="primary"

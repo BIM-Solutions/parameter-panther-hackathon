@@ -1,6 +1,6 @@
 <template>
   <div>
-    <app-bar />
+
     <v-container mx-0>
       <v-row no-gutters>
         <v-col md="8">
@@ -11,24 +11,20 @@
         </v-col>
       </v-row>
     </v-container>
-    <Footer />
+
   </div>
 </template>
 
 <script>
 import DataTable from "../components/DataTable";
-import AppBar from "../components/AppBar.vue";
 import Renderer from "../components/Renderer.vue";
-import Footer from "../components/Footer.vue";
 
 export default {
   name: "HomeView",
 
   components: {
-    AppBar,
     DataTable,
     Renderer,
-    Footer,
   },
 
   data() {

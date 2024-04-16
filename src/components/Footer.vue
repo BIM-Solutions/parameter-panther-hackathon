@@ -1,5 +1,5 @@
 <template>
-  <v-footer>
+  <v-footer app>
     <v-row dense justify="center" align="center">
       <v-col cols="6">
         <v-card-actions class="justify-end">
