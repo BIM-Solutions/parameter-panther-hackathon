@@ -1,13 +1,13 @@
 <template>
-  <v-app-bar app color="blue" dark>
+  <v-app-bar app color="" dark>
     <v-img
       class="ml-2 mr-5"
-      :src="require('./../assets/logo.png')"
-      max-height="40"
-      max-width="40"
+      :src="require('./../assets/logo.svg')"
+      max-height="80"
+      max-width="80"
       contain
     ></v-img>
-    <v-toolbar-title>Parameter Panther</v-toolbar-title>
+    <v-toolbar-title>Parameter Network</v-toolbar-title>
     <v-spacer></v-spacer>
     <v-btn outlined class="mr-2" @click="$store.dispatch('logout')"> Log out </v-btn>
     <v-btn icon>
